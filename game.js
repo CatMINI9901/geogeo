@@ -17,9 +17,9 @@ const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
 const MUNAKATA_LOCATIONS = [
-    { lat: 33.79540626297044, lng: 130.52810608097153, hint: "JR東郷駅付近" },
+    { lat: 33.79540626297044, lng: 130.52810608097153, hint: "東郷駅" },
     { lat: 33.79726594115479, lng: 130.524385648872, hint: "家" },
-    { lat: 33.8178, lng: 130.5365, hint: "くりえいと宗像付近" },
+    { lat: 55.75873942110971, lng: 37.61936583942526, hint: "モスクワ" },
 ];
 
 // 使用済みの地点を保持する配列
