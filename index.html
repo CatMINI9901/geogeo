@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GeoGuessr Lite (Japan)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>GeoGuessr Lite</h1>
+        <div class="stats">
+            <div>Rd: <span id="round">1</span>/5</div>
+            <div>Score: <span id="score">0</span></div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="photo-panel">
+            <div id="pano"></div>
+            <div id="loading" class="loading-overlay">日本国内を検索中...</div>
+        </div>
+        
+        <div class="map-panel">
+            <div id="map"></div>
+            <div id="result" class="result-overlay">
+                <div id="result-text"></div>
+            </div>
+            <div class="controls">
+                <button id="guess-btn" disabled>推測する</button>
+                <button id="next-btn" style="display: none;">次のラウンド</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJzImr779ud_LxXVmOA7bNtHiKcJyzSxg&callback=initGame" async defer></script>
+    <script src="game.js"></script>
+</body>
+</html>
