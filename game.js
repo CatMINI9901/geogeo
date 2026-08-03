@@ -16,81 +16,69 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
-// 宗像市エリア設定
-// 宗像市エリア設定
-const MUNAKATA_CONFIG = {
-    center: [33.805, 130.540],
-    zoom: 12,
-    // 宗像市内に極力収まる座標枠（陸地メイン）
-    bounds: [
-        { minLat: 33.745, maxLat: 33.855, minLng: 130.500, maxLng: 130.590 }, // 本土側メイン（赤間・東郷・吉武・神湊）
-        { minLat: 33.885, maxLat: 33.910, minLng: 130.415, maxLng: 130.445 }  // 大島エリア
-    ]
-};
+// 宗像市内の確定ストリートビュー地点リスト（東郷・赤間・自由ヶ丘・神湊・大島など）
+const MUNAKATA_LOCATIONS = [
+    { lat: 33.8015, lng: 130.5408, hint: "JR東郷駅付近" },
+    { lat: 33.8123, lng: 130.5631, hint: "JR赤間駅付近" },
+    { lat: 33.8310, lng: 130.5142, hint: "宗像大社 辺津宮付近" },
+    { lat: 33.8781, lng: 130.5284, hint: "神湊港フェリーターミナル付近" },
+    { lat: 33.8178, lng: 130.5365, hint: "くりえいと宗像付近" },
+    { lat: 33.7932, lng: 130.5684, hint: "自由ヶ丘エリア" },
+    { lat: 33.8055, lng: 130.5912, hint: "吉武地区（吉武高木遺跡周辺）" },
+    { lat: 33.8421, lng: 130.5489, hint: "道の駅むなかた周辺" },
+    { lat: 33.7785, lng: 130.5241, hint: "東郷橋・辻地区周辺" },
+    { lat: 33.8289, lng: 130.5841, hint: "教育大前駅周辺" },
+    { lat: 33.8965, lng: 130.4352, hint: "大島（宗像大社 中津宮付近）" },
+    { lat: 33.7881, lng: 130.5085, hint: "日の里地区" },
+    { lat: 33.8582, lng: 130.5198, hint: "さつき松原沿い" },
+    { lat: 33.8189, lng: 130.5124, hint: "田島地区" },
+    { lat: 33.8002, lng: 130.5750, hint: "青葉台地区" }
+];
 
-function getRandomLatLng() {
-    const box = MUNAKATA_CONFIG.bounds[Math.floor(Math.random() * MUNAKATA_CONFIG.bounds.length)];
-    const lat = box.minLat + Math.random() * (box.maxLat - box.minLat);
-    const lng = box.minLng + Math.random() * (box.maxLng - box.minLng);
-    return { lat, lng };
-}
+// 使用済みの地点を保持する配列
+let usedIndices = [];
 
-function fetchRandomStreetView(callback) {
-    const randomLoc = getRandomLatLng();
-    // 境界をまたがないよう検索半径を 1,500m に縮小
-    const radius = 1500;
+function initGame() {
+    streetViewService = new google.maps.StreetViewService();
+    geocoder = new google.maps.Geocoder();
 
-    streetViewService.getPanorama(
+    panorama = new google.maps.StreetViewPanorama(
+        document.getElementById('pano'),
         {
-            location: randomLoc,
-            radius: radius,
-            source: google.maps.StreetViewSource.OUTDOOR
-        },
-        (data, status) => {
-            if (status === google.maps.StreetViewStatus.OK) {
-                const latLng = data.location.latLng;
-
-                // Reverse Geocoding で厳密に宗像市か判定
-                geocoder.geocode({ location: latLng, language: 'ja' }, (results, geocodeStatus) => {
-                    if (geocodeStatus === "OK" && results[0]) {
-                        const isMunakata = checkIsMunakata(results[0]);
-
-                        if (isMunakata) {
-                            const addressName = results[0].formatted_address.replace(/^日本[、,]\s*/, '');
-                            callback(data, addressName);
-                        } else {
-                            // 宗像市外（福津市や岡垣町など）だった場合は再検索
-                            fetchRandomStreetView(callback);
-                        }
-                    } else {
-                        fetchRandomStreetView(callback);
-                    }
-                });
-            } else {
-                fetchRandomStreetView(callback);
-            }
+            pov: { heading: 0, pitch: 0 },
+            zoom: 1,
+            addressControl: false,
+            showRoadLabels: false,
+            motionTracking: false,
+            motionTrackingControl: false
         }
     );
-}
 
-/**
- * Geocodingの結果から「宗像市」が含まれているかを厳密にチェックする関数
- */
-function checkIsMunakata(geocodeResult) {
-    // 1. address_components から市区町村名を確認
-    if (geocodeResult.address_components) {
-        for (const component of geocodeResult.address_components) {
-            if (component.long_name.includes("宗像市") || component.short_name.includes("宗像市")) {
-                return true;
-            }
+    map = L.map('map').setView([33.805, 130.540], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    window.addEventListener('resize', () => {
+        setTimeout(() => map.invalidateSize(), 200);
+    });
+
+    map.on('click', function(e) {
+        if (nextBtn.style.display === 'block') return;
+
+        guessLatLng = e.latlng;
+        if (guessMarker) {
+            guessMarker.setLatLng(guessLatLng);
+        } else {
+            guessMarker = L.marker(guessLatLng).addTo(map);
         }
-    }
-    // 2. 整形済み住所文字列のチェック（バックアップ）
-    if (geocodeResult.formatted_address && geocodeResult.formatted_address.includes("宗像市")) {
-        return true;
-    }
+        guessBtn.disabled = false;
+    });
 
-    return false;
+    guessBtn.addEventListener('click', handleGuess);
+    nextBtn.addEventListener('click', handleNextRound);
+
+    loadRound();
 }
 
 function loadRound() {
@@ -108,26 +96,56 @@ function loadRound() {
     resultOverlay.style.display = 'none';
     loadingOverlay.style.display = 'flex';
 
-    map.setView(MUNAKATA_CONFIG.center, MUNAKATA_CONFIG.zoom);
+    map.setView([33.805, 130.540], 12);
 
-    fetchRandomStreetView((data, addressName) => {
-        const latLng = data.location.latLng;
-        currentLoc = {
-            lat: latLng.lat(),
-            lng: latLng.lng(),
-            name: addressName
-        };
+    // 未使用の地点からランダムに選択
+    let targetIndex;
+    do {
+        targetIndex = Math.floor(Math.random() * MUNAKATA_LOCATIONS.length);
+    } while (usedIndices.includes(targetIndex) && usedIndices.length < MUNAKATA_LOCATIONS.length);
 
-        panorama.setPano(data.location.pano);
-        panorama.setPov({ heading: 0, pitch: 0 });
-        loadingOverlay.style.display = 'none';
+    usedIndices.push(targetIndex);
+    const targetLoc = MUNAKATA_LOCATIONS[targetIndex];
 
-        map.invalidateSize();
-    });
+    // 指定座標の最も近いストリートビューを取得
+    streetViewService.getPanorama(
+        {
+            location: { lat: targetLoc.lat, lng: targetLoc.lng },
+            radius: 300,
+            source: google.maps.StreetViewSource.OUTDOOR
+        },
+        (data, status) => {
+            if (status === google.maps.StreetViewStatus.OK) {
+                const latLng = data.location.latLng;
+
+                // 正確な住所文字列を取得
+                geocoder.geocode({ location: latLng, language: 'ja' }, (results, geocodeStatus) => {
+                    let addressName = targetLoc.hint;
+                    if (geocodeStatus === "OK" && results[0]) {
+                        addressName = results[0].formatted_address.replace(/^日本[、,]\s*/, '');
+                    }
+
+                    currentLoc = {
+                        lat: latLng.lat(),
+                        lng: latLng.lng(),
+                        name: addressName
+                    };
+
+                    panorama.setPano(data.location.pano);
+                    panorama.setPov({ heading: 0, pitch: 0 });
+                    loadingOverlay.style.display = 'none';
+                    map.invalidateSize();
+                });
+            } else {
+                // 万が一ストリートビューが見つからなかった場合は別の地点で再試行
+                loadRound();
+            }
+        }
+    );
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // 地球の半径 (km)
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -137,9 +155,8 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// 市内限定向けにスコア計算の減衰パラメータをタイトに調整（scale = 3.0）
 function calculateScore(distanceKm) {
-    const scale = 3.0; // 3km離れると大幅失点
+    const scale = 2.0; // 宗像市内規模に合わせて精度判定を厳格化
     const score = Math.round(5000 * Math.exp(-distanceKm / scale));
     return Math.max(0, score);
 }
@@ -158,7 +175,6 @@ function handleGuess() {
 
     document.getElementById('score').textContent = totalScore;
     
-    // m（メートル）か km（キロメートル）かを見やすく表示分け
     const distanceStr = distance < 1.0 
         ? `${Math.round(distance * 1000)} m` 
         : `${Math.round(distance * 100) / 100} km`;
