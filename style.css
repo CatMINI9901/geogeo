@@ -10,7 +10,7 @@ body {
     background: #1a1a1a;
     color: #fff;
     height: 100vh;
-    height: 100dvh; /* スマホのアドレスバー対策 */
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -31,15 +31,13 @@ h1 {
     font-size: 1.1rem;
 }
 
-#region-select {
+.region-title {
     background: #34495e;
-    color: #fff;
-    border: 1px solid #555;
-    padding: 4px 8px;
+    color: #f1c40f;
+    padding: 4px 10px;
     border-radius: 4px;
     font-size: 0.9rem;
-    outline: none;
-    cursor: pointer;
+    font-weight: bold;
 }
 
 .stats {
@@ -152,34 +150,32 @@ button:hover:not(:disabled) {
     font-size: 1.3rem;
 }
 
-/* --------------------------------------------------
-   スマホ向けレスポンシブ対応 (画面幅 768px 以下)
--------------------------------------------------- */
+/* スマホ向けレスポンシブ対応 */
 @media (max-width: 768px) {
     header {
         padding: 5px 10px;
     }
 
     h1 {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
-    #region-select {
+    .region-title {
         font-size: 0.8rem;
-        padding: 2px 4px;
+        padding: 2px 6px;
     }
 
     .game-container {
-        flex-direction: column; /* 上下分割に切替 */
+        flex-direction: column; /* 上下分割 */
     }
 
     .photo-panel {
-        flex: 1; /* 上半分：ストリートビュー */
+        flex: 1;
         min-height: 45vh;
     }
 
     .map-panel {
-        flex: 1; /* 下半分：マップ */
+        flex: 1;
         min-height: 45vh;
         border-left: none;
         border-top: 2px solid #333;
