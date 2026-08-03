@@ -17,58 +17,16 @@ const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
 // 宗像市エリア設定
+// 宗像市エリア設定
 const MUNAKATA_CONFIG = {
-    center: [33.805, 130.540], // 宗像市中心付近
+    center: [33.805, 130.540],
     zoom: 12,
-    // 宗像市全域（大島・地島含む）をカバーするバウンディングボックス
+    // 宗像市内に極力収まる座標枠（陸地メイン）
     bounds: [
-        { minLat: 33.740, maxLat: 33.880, minLng: 130.470, maxLng: 130.600 }, // 本土側（東郷・赤間・神湊等）
-        { minLat: 33.880, maxLat: 33.925, minLng: 130.410, maxLng: 130.450 }  // 大島エリア
+        { minLat: 33.745, maxLat: 33.855, minLng: 130.500, maxLng: 130.590 }, // 本土側メイン（赤間・東郷・吉武・神湊）
+        { minLat: 33.885, maxLat: 33.910, minLng: 130.415, maxLng: 130.445 }  // 大島エリア
     ]
 };
-
-function initGame() {
-    streetViewService = new google.maps.StreetViewService();
-    geocoder = new google.maps.Geocoder();
-
-    panorama = new google.maps.StreetViewPanorama(
-        document.getElementById('pano'),
-        {
-            pov: { heading: 0, pitch: 0 },
-            zoom: 1,
-            addressControl: false,
-            showRoadLabels: false,
-            motionTracking: false,
-            motionTrackingControl: false
-        }
-    );
-
-    map = L.map('map').setView(MUNAKATA_CONFIG.center, MUNAKATA_CONFIG.zoom);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    window.addEventListener('resize', () => {
-        setTimeout(() => map.invalidateSize(), 200);
-    });
-
-    map.on('click', function(e) {
-        if (nextBtn.style.display === 'block') return;
-
-        guessLatLng = e.latlng;
-        if (guessMarker) {
-            guessMarker.setLatLng(guessLatLng);
-        } else {
-            guessMarker = L.marker(guessLatLng).addTo(map);
-        }
-        guessBtn.disabled = false;
-    });
-
-    guessBtn.addEventListener('click', handleGuess);
-    nextBtn.addEventListener('click', handleNextRound);
-
-    loadRound();
-}
 
 function getRandomLatLng() {
     const box = MUNAKATA_CONFIG.bounds[Math.floor(Math.random() * MUNAKATA_CONFIG.bounds.length)];
@@ -79,8 +37,8 @@ function getRandomLatLng() {
 
 function fetchRandomStreetView(callback) {
     const randomLoc = getRandomLatLng();
-    // 市内限定のため検索半径を5kmに設定
-    const radius = 5000;
+    // 境界をまたがないよう検索半径を 1,500m に縮小
+    const radius = 1500;
 
     streetViewService.getPanorama(
         {
@@ -90,14 +48,18 @@ function fetchRandomStreetView(callback) {
         },
         (data, status) => {
             if (status === google.maps.StreetViewStatus.OK) {
-                // 住所を取得して「宗像市」が含まれる場合のみ採用（市外を排除）
                 const latLng = data.location.latLng;
+
+                // Reverse Geocoding で厳密に宗像市か判定
                 geocoder.geocode({ location: latLng, language: 'ja' }, (results, geocodeStatus) => {
                     if (geocodeStatus === "OK" && results[0]) {
-                        const formatted = results[0].formatted_address;
-                        if (formatted.includes("宗像市")) {
-                            callback(data, formatted.replace(/^日本[、,]\s*/, ''));
+                        const isMunakata = checkIsMunakata(results[0]);
+
+                        if (isMunakata) {
+                            const addressName = results[0].formatted_address.replace(/^日本[、,]\s*/, '');
+                            callback(data, addressName);
                         } else {
+                            // 宗像市外（福津市や岡垣町など）だった場合は再検索
                             fetchRandomStreetView(callback);
                         }
                     } else {
@@ -109,6 +71,26 @@ function fetchRandomStreetView(callback) {
             }
         }
     );
+}
+
+/**
+ * Geocodingの結果から「宗像市」が含まれているかを厳密にチェックする関数
+ */
+function checkIsMunakata(geocodeResult) {
+    // 1. address_components から市区町村名を確認
+    if (geocodeResult.address_components) {
+        for (const component of geocodeResult.address_components) {
+            if (component.long_name.includes("宗像市") || component.short_name.includes("宗像市")) {
+                return true;
+            }
+        }
+    }
+    // 2. 整形済み住所文字列のチェック（バックアップ）
+    if (geocodeResult.formatted_address && geocodeResult.formatted_address.includes("宗像市")) {
+        return true;
+    }
+
+    return false;
 }
 
 function loadRound() {
