@@ -18,14 +18,7 @@ const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
 const JAPAN_BOUNDS = [
-    { minLat: 41.5, maxLat: 45.5, minLng: 139.5, maxLng: 145.0 }, // 北海道
-    { minLat: 38.0, maxLat: 41.5, minLng: 139.0, maxLng: 142.0 }, // 東北
-    { minLat: 35.0, maxLat: 38.0, minLng: 138.5, maxLng: 141.0 }, // 関東・甲信越
-    { minLat: 34.5, maxLat: 37.5, minLng: 136.0, maxLng: 139.0 }, // 北陸・東海
-    { minLat: 34.0, maxLat: 36.0, minLng: 134.5, maxLng: 136.5 }, // 近畿
-    { minLat: 33.5, maxLat: 35.5, minLng: 131.0, maxLng: 135.0 }, // 中国・四国
     { minLat: 31.0, maxLat: 34.0, minLng: 129.5, maxLng: 132.0 }, // 九州
-    { minLat: 26.0, maxLat: 27.0, minLng: 127.5, maxLng: 128.5 }  // 沖縄本島
 ];
 
 function initGame() {
