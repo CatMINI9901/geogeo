@@ -31,6 +31,17 @@ h1 {
     font-size: 1.1rem;
 }
 
+#region-select {
+    background: #34495e;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+}
+
 .stats {
     display: flex;
     gap: 15px;
@@ -145,6 +156,19 @@ button:hover:not(:disabled) {
    スマホ向けレスポンシブ対応 (画面幅 768px 以下)
 -------------------------------------------------- */
 @media (max-width: 768px) {
+    header {
+        padding: 5px 10px;
+    }
+
+    h1 {
+        font-size: 0.95rem;
+    }
+
+    #region-select {
+        font-size: 0.8rem;
+        padding: 2px 4px;
+    }
+
     .game-container {
         flex-direction: column; /* 上下分割に切替 */
     }
