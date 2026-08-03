@@ -139,7 +139,6 @@ function getRandomLatLng() {
 
 function fetchRandomStreetView(callback) {
     const randomLoc = getRandomLatLng();
-    // 都道府県選択時は検索半径を小さめ(15km)にし、全国時は大きめ(50km)にする
     const radius = currentRegionKey === 'japan' ? 50000 : 15000;
 
     streetViewService.getPanorama(
@@ -213,7 +212,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function calculateScore(distanceKm) {
-    // 特定の県を選んでいる場合はスコア算出の判定距離をシビアに(20km基準)、全国なら(300km基準)にする
     const scale = currentRegionKey === 'japan' ? 300 : 20;
     const score = Math.round(5000 * Math.exp(-distanceKm / scale));
     return Math.max(0, score);
