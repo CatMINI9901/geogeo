@@ -16,9 +16,8 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
-// 宗像市内の確定ストリートビュー地点リスト（東郷・赤間・自由ヶ丘・神湊・大島など）
 const MUNAKATA_LOCATIONS = [
-    { lat: 33.8015, lng: 130.5408, hint: "JR東郷駅付近" },
+    { lat: 33.79540626297044, lng: 130.52810608097153, hint: "JR東郷駅付近" },
     { lat: 33.79726594115479, lng: 130.524385648872, hint: "家" },
     { lat: 33.8178, lng: 130.5365, hint: "くりえいと宗像付近" },
 ];
