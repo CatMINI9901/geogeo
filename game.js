@@ -17,12 +17,11 @@ const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
 const MUNAKATA_LOCATIONS = [
-    { lat: 33.79540626297044, lng: 130.52810608097153, hint: "東郷駅" },
-    { lat: 34.668063542382924, lng: 135.43575017501757, hint: "家" },
-    { lat: 55.75873942110971, lng: 37.61936583942526, hint: "ロシア" },
-    { lat: 33.796220866808476, lng: 130.52529645225994, hint: "公民館" },
-    { lat: -33.85676016938325, lng: 151.2145104661285, hint: "シドニー" },
-    { lat: 37.420706401761365, lng: -122.07801819150447, hint: "？？？" },
+    { lat: 33.796220, lng: 130.525296, hint: "日の里（本物）" },
+    { lat: 35.725812, lng: 140.155421, hint: "ユーカリが" },
+    { lat: 34.071253, lng: 130.892154, hint: "吉見海岸" },
+    { lat: 32.861245, lng: 130.795123, hint: "菊陽町" },
+    { lat: 34.908512, lng: 135.195412, hint: "ウッディタウン" }
 ];
 
 // 使用済みの地点を保持する配列
