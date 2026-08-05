@@ -16,41 +16,29 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
-// 宗像市風・激似引っ掛け＆本物混ざり20連発リスト
-const MUNAKATA_LOCATIONS = [
-    // --- 【ニュータウン系（日の里・自由ヶ丘・青葉台・赤間ハイツ感）】 ---
-    { lat: 35.725812, lng: 140.155421, hint: "千葉県ユーカリが丘（日の里そっくりの昭和〜平成ニュータウン）" },
-    { lat: 34.908512, lng: 135.195412, hint: "兵庫県三田市（坂道と戸建ての並びが自由ヶ丘・赤間ハイツ）" },
-    { lat: 34.781204, lng: 135.002154, hint: "兵庫県西宮名塩（斜面住宅地と緑の交わりが日の里東地区）" },
-    { lat: 35.812451, lng: 139.521045, hint: "埼玉県所沢市（青葉台や舞の里あたりの閑静な街並み）" },
-    { lat: 33.521451, lng: 130.512410, hint: "福岡県筑紫野市光が丘（筑前エリア独特の住宅街のレンガ風擁壁）" },
-    { lat: 34.698512, lng: 135.784125, hint: "奈良県生駒市（傾斜のある新興住宅地のカーブ）" },
+// 順番固定の出題シナリオ（全7ラウンド）
+const SCENARIO_LOCATIONS = [
+    // Rd 1: 【本物】日の里（安心させる）
+    { lat: 33.795406, lng: 130.528106, hint: "福岡県宗像市日の里（本物）" },
 
-    // --- 【ロードサイド・商業地系（くりえいと・国道3号線バイパス感）】 ---
-    { lat: 32.861245, lng: 130.795123, hint: "熊本県菊陽町（くりえいとの大型モール・駐車場・郊外店舗感）" },
-    { lat: 33.315412, lng: 130.551241, hint: "福岡県久留米市上津（国道3号線沿いのデジャヴ景色）" },
-    { lat: 33.821045, lng: 130.684120, hint: "福岡県八幡西区本城（バイパス沿いのロードサイド店舗網）" },
-    { lat: 33.584120, lng: 130.485124, hint: "福岡県糟屋郡粕屋町（巨大商業施設周辺の道路と空の広さ）" },
+    // Rd 2: 【偽物1】千葉県ユーカリが丘（日の里風住宅街）
+    { lat: 35.725812, lng: 140.155421, hint: "千葉県ユーカリが丘（日の里風ニュータウン）" },
 
-    // --- 【海沿い・海岸線系（神湊・さつき松原・鐘崎感）】 ---
-    { lat: 34.071253, lng: 130.892154, hint: "山口県下関市吉見（神湊〜さつき松原の松林と防波堤・海の距離感）" },
-    { lat: 33.621451, lng: 130.201451, hint: "福岡県糸島市志摩（神湊〜勝浦海岸周辺の防風林と海岸道路）" },
-    { lat: 33.385124, lng: 129.551241, hint: "長崎県平戸市（鐘崎漁港周辺の古い漁村の路地と港の雰囲気）" },
-    { lat: 34.385120, lng: 131.185412, hint: "山口県長門市仙崎（地島や大島の港周辺に酷似した雰囲気）" },
+    // Rd 3: 【偽物2】熊本県菊陽町（くりえいと風ロードサイド）
+    { lat: 32.861245, lng: 130.795123, hint: "熊本県菊陽町（くりえいと風バイパス沿い）" },
 
-    // --- 【のどかな田園・歴史地区・学園都市系（吉武・山田・教育大前感）】 ---
-    { lat: 33.351241, lng: 130.621451, hint: "福岡県小郡市（吉武や赤木周辺の溜め池と田んぼ・山並み）" },
-    { lat: 33.654120, lng: 130.685124, hint: "福岡県宮若市（山田地区や田島周辺ののどかな山裾の集落）" },
-    { lat: 33.501245, lng: 130.551241, hint: "福岡県太宰府市（宗像大社周辺の緑豊かな旧道沿い）" },
-    { lat: 33.585124, lng: 130.221451, hint: "福岡県西区九大学研都市周辺（教育大〜赤間駅周辺の学生街・マンション群）" },
+    // Rd 4: 【偽物3】山口県下関市（神湊風の海沿い）
+    { lat: 34.071253, lng: 130.892154, hint: "山口県下関市（神湊〜さつき松原風の海岸道路）" },
 
-    // --- 【本物の宗像市（たまに本物を混ぜて困惑させる）】 ---
-    { lat: 33.795406, lng: 130.528106, hint: "福岡県宗像市日の里（本物の日の里）" },
-    { lat: 33.831012, lng: 130.514210, hint: "福岡県宗像市田島（本物の宗像大社近く）" }
+    // Rd 5: 【偽物4】兵庫県三田市（赤間・自由ヶ丘風の住宅街）
+    { lat: 34.908512, lng: 135.195412, hint: "兵庫県三田市（自由ヶ丘風の坂道住宅街）" },
+
+    // Rd 6: 【本物】宗像市田島（「どうせ偽物だろ」と疑うプレイヤーを撃沈）
+    { lat: 33.831012, lng: 130.514210, hint: "福岡県宗像市田島（本物の宗像大社近く）" },
+
+    // Rd 7: 【偽物5】福岡県糸島市（最後も本物と思わせて微妙に外す）
+    { lat: 33.621451, lng: 130.201451, hint: "福岡県糸島市志摩（勝浦・神湊風の海岸線）" }
 ];
-
-// 使用済みの地点を保持する配列
-let usedIndices = [];
 
 function initGame() {
     streetViewService = new google.maps.StreetViewService();
@@ -112,16 +100,9 @@ function loadRound() {
 
     map.setView([33.805, 130.540], 12);
 
-    // 未使用の地点からランダムに選択
-    let targetIndex;
-    do {
-        targetIndex = Math.floor(Math.random() * MUNAKATA_LOCATIONS.length);
-    } while (usedIndices.includes(targetIndex) && usedIndices.length < MUNAKATA_LOCATIONS.length);
+    // 現在のラウンドに対応する地点を順番に取得（1〜7）
+    const targetLoc = SCENARIO_LOCATIONS[currentRound - 1];
 
-    usedIndices.push(targetIndex);
-    const targetLoc = MUNAKATA_LOCATIONS[targetIndex];
-
-    // 指定座標の最も近いストリートビューを取得
     streetViewService.getPanorama(
         {
             location: { lat: targetLoc.lat, lng: targetLoc.lng },
@@ -150,8 +131,7 @@ function loadRound() {
                     map.invalidateSize();
                 });
             } else {
-                // 万が一読み込み失敗時は再試行
-                loadRound();
+                console.error("StreetView load error for round: " + currentRound);
             }
         }
     );
