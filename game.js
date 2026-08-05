@@ -16,6 +16,7 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
+// 宗像市風・激似引っ掛け＆本物混ざり20連発リスト
 const MUNAKATA_LOCATIONS = [
     // --- 【ニュータウン系（日の里・自由ヶ丘・青葉台・赤間ハイツ感）】 ---
     { lat: 35.725812, lng: 140.155421, hint: "千葉県ユーカリが丘（日の里そっくりの昭和〜平成ニュータウン）" },
@@ -131,7 +132,6 @@ function loadRound() {
             if (status === google.maps.StreetViewStatus.OK) {
                 const latLng = data.location.latLng;
 
-                // 正確な住所文字列を取得
                 geocoder.geocode({ location: latLng, language: 'ja' }, (results, geocodeStatus) => {
                     let addressName = targetLoc.hint;
                     if (geocodeStatus === "OK" && results[0]) {
@@ -150,7 +150,7 @@ function loadRound() {
                     map.invalidateSize();
                 });
             } else {
-                // 万が一ストリートビューが見つからなかった場合は別の地点で再試行
+                // 万が一読み込み失敗時は再試行
                 loadRound();
             }
         }
@@ -169,7 +169,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function calculateScore(distanceKm) {
-    const scale = 2.0; // 宗像市内規模に合わせて精度判定を厳格化
+    const scale = 2.0;
     const score = Math.round(5000 * Math.exp(-distanceKm / scale));
     return Math.max(0, score);
 }
@@ -202,16 +202,16 @@ function handleGuess() {
     guessBtn.style.display = 'none';
     nextBtn.style.display = 'block';
 
-    if (currentRound >= 5) {
+    if (currentRound >= 7) {
         nextBtn.textContent = '最終結果を見る';
     }
 }
 
 function handleNextRound() {
-    if (currentRound >= 5) {
+    if (currentRound >= 7) {
         resultText.innerHTML = `
             <h2>ゲームクリア！</h2>
-            <p>宗像マスター度: <strong>${totalScore} / 25000 pt</strong></p>
+            <p>宗像マスター度: <strong>${totalScore} / 35000 pt</strong></p>
         `;
         nextBtn.style.display = 'none';
         return;
