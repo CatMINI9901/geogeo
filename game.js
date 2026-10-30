@@ -16,34 +16,13 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
-// 出題候補の地点リスト（全7ラウンド分以上を用意してランダム抽選）
-const ALL_LOCATIONS = [
-    { lat: 33.587969787247594, lng: 130.1572039911629, hint: "福岡県糸島市志摩（勝浦・神湊風の海岸線）" },
-    { lat: 33.801234567890123, lng: 130.541234567890123, hint: "宗像市内の地点①" },
-    { lat: 33.812345678901234, lng: 130.552345678901234, hint: "宗像市内の地点②" },
-    { lat: 33.823456789012345, lng: 130.563456789012345, hint: "宗像市内の地点③" },
-    { lat: 33.834567890123456, lng: 130.574567890123456, hint: "宗像市内の地点④" },
-    { lat: 33.845678901234567, lng: 130.585678901234567, hint: "宗像市内の地点⑤" },
-    { lat: 33.856789012345678, lng: 130.596789012345678, hint: "宗像市内の地点⑥" }
-];
-
-// ゲームで実際に使うランダムな出題シナリオ用配列
-let SCENARIO_LOCATIONS = [];
-
-// 配列をランダムにシャッフルする関数（Fisher–Yatesアルゴリズム）
-function shuffleArray(array) {
-    const clone = [...array];
-    for (let i = clone.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [clone[i], clone[j]] = [clone[j], clone[i]];
-    }
-    return clone;
-}
+// 指定された赤枠の範囲
+const LAT_MIN = 33.788942921090694;
+const LAT_MAX = 33.803553439704395;
+const LNG_MIN = 130.51605952283987;
+const LNG_MAX = 130.57936969215942;
 
 function initGame() {
-    // ゲーム開始時に候補をランダムにシャッフルして7ラウンド分を決定
-    SCENARIO_LOCATIONS = shuffleArray(ALL_LOCATIONS).slice(0, 7);
-
     streetViewService = new google.maps.StreetViewService();
     geocoder = new google.maps.Geocoder();
 
@@ -59,7 +38,7 @@ function initGame() {
         }
     );
 
-    map = L.map('map').setView([33.805, 130.540], 12);
+    map = L.map('map').setView([33.796, 130.547], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -101,15 +80,20 @@ function loadRound() {
     resultOverlay.style.display = 'none';
     loadingOverlay.style.display = 'flex';
 
-    map.setView([33.805, 130.540], 12);
+    map.setView([33.796, 130.547], 13);
 
-    // シャッフルされたシナリオから現在のラウンドの地点を取得（1〜7）
-    const targetLoc = SCENARIO_LOCATIONS[currentRound - 1];
+    fetchRandomStreetView();
+}
+
+function fetchRandomStreetView() {
+    // 指定範囲内で完全にランダムな座標を算出
+    const randomLat = LAT_MIN + Math.random() * (LAT_MAX - LAT_MIN);
+    const randomLng = LNG_MIN + Math.random() * (LNG_MAX - LNG_MIN);
 
     streetViewService.getPanorama(
         {
-            location: { lat: targetLoc.lat, lng: targetLoc.lng },
-            radius: 300,
+            location: { lat: randomLat, lng: randomLng },
+            radius: 500,
             source: google.maps.StreetViewSource.OUTDOOR
         },
         (data, status) => {
@@ -117,7 +101,7 @@ function loadRound() {
                 const latLng = data.location.latLng;
 
                 geocoder.geocode({ location: latLng, language: 'ja' }, (results, geocodeStatus) => {
-                    let addressName = targetLoc.hint;
+                    let addressName = "指定エリア内";
                     if (geocodeStatus === "OK" && results[0]) {
                         addressName = results[0].formatted_address.replace(/^日本[、,]\s*/, '');
                     }
@@ -134,8 +118,8 @@ function loadRound() {
                     map.invalidateSize();
                 });
             } else {
-                console.error("StreetView load error for round: " + currentRound);
-                loadingOverlay.style.display = 'none';
+                // 道路やストリートビューがない場所にあたった場合は、別のランダム座標で再試行
+                fetchRandomStreetView();
             }
         }
     );
