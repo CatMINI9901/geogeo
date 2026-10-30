@@ -16,18 +16,18 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
-// 出題候補の地点リスト（いくつでも追加OK！）
+// 出題候補の地点リスト（全7ラウンド分以上を用意してランダム抽選）
 const ALL_LOCATIONS = [
     { lat: 33.587969787247594, lng: 130.1572039911629, hint: "福岡県糸島市志摩（勝浦・神湊風の海岸線）" },
-    { lat: 33.805000000000000, lng: 130.5400000000000, hint: "宗像市内のどこか①" },
-    { lat: 33.810000000000000, lng: 130.5450000000000, hint: "宗像市内のどこか②" },
-    { lat: 33.815000000000000, lng: 130.5500000000000, hint: "宗像市内のどこか③" },
-    { lat: 33.820000000000000, lng: 130.5550000000000, hint: "宗像市内のどこか④" },
-    { lat: 33.825000000000000, lng: 130.5600000000000, hint: "宗像市内のどこか⑤" },
-    { lat: 33.830000000000000, lng: 130.5650000000000, hint: "宗像市内のどこか⑥" }
+    { lat: 33.801234567890123, lng: 130.541234567890123, hint: "宗像市内の地点①" },
+    { lat: 33.812345678901234, lng: 130.552345678901234, hint: "宗像市内の地点②" },
+    { lat: 33.823456789012345, lng: 130.563456789012345, hint: "宗像市内の地点③" },
+    { lat: 33.834567890123456, lng: 130.574567890123456, hint: "宗像市内の地点④" },
+    { lat: 33.845678901234567, lng: 130.585678901234567, hint: "宗像市内の地点⑤" },
+    { lat: 33.856789012345678, lng: 130.596789012345678, hint: "宗像市内の地点⑥" }
 ];
 
-// ゲームで実際に使うシナリオ用配列
+// ゲームで実際に使うランダムな出題シナリオ用配列
 let SCENARIO_LOCATIONS = [];
 
 // 配列をランダムにシャッフルする関数（Fisher–Yatesアルゴリズム）
@@ -41,6 +41,7 @@ function shuffleArray(array) {
 }
 
 function initGame() {
+    // ゲーム開始時に候補をランダムにシャッフルして7ラウンド分を決定
     SCENARIO_LOCATIONS = shuffleArray(ALL_LOCATIONS).slice(0, 7);
 
     streetViewService = new google.maps.StreetViewService();
@@ -102,7 +103,7 @@ function loadRound() {
 
     map.setView([33.805, 130.540], 12);
 
-    // 現在のラウンドに対応する地点を順番に取得（1〜7）
+    // シャッフルされたシナリオから現在のラウンドの地点を取得（1〜7）
     const targetLoc = SCENARIO_LOCATIONS[currentRound - 1];
 
     streetViewService.getPanorama(
@@ -134,6 +135,7 @@ function loadRound() {
                 });
             } else {
                 console.error("StreetView load error for round: " + currentRound);
+                loadingOverlay.style.display = 'none';
             }
         }
     );
