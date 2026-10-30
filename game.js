@@ -16,12 +16,33 @@ const resultOverlay = document.getElementById('result');
 const resultText = document.getElementById('result-text');
 const loadingOverlay = document.getElementById('loading');
 
-// 順番固定の出題シナリオ（全7ラウンド）
-const SCENARIO_LOCATIONS = [
-    { lat: 33.587969787247594, lng: 130.1572039911629, hint: "福岡県糸島市志摩（勝浦・神湊風の海岸線）" }
+// 出題候補の地点リスト（いくつでも追加OK！）
+const ALL_LOCATIONS = [
+    { lat: 33.587969787247594, lng: 130.1572039911629, hint: "福岡県糸島市志摩（勝浦・神湊風の海岸線）" },
+    { lat: 33.805000000000000, lng: 130.5400000000000, hint: "宗像市内のどこか①" },
+    { lat: 33.810000000000000, lng: 130.5450000000000, hint: "宗像市内のどこか②" },
+    { lat: 33.815000000000000, lng: 130.5500000000000, hint: "宗像市内のどこか③" },
+    { lat: 33.820000000000000, lng: 130.5550000000000, hint: "宗像市内のどこか④" },
+    { lat: 33.825000000000000, lng: 130.5600000000000, hint: "宗像市内のどこか⑤" },
+    { lat: 33.830000000000000, lng: 130.5650000000000, hint: "宗像市内のどこか⑥" }
 ];
 
+// ゲームで実際に使うシナリオ用配列
+let SCENARIO_LOCATIONS = [];
+
+// 配列をランダムにシャッフルする関数（Fisher–Yatesアルゴリズム）
+function shuffleArray(array) {
+    const clone = [...array];
+    for (let i = clone.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [clone[i], clone[j]] = [clone[j], clone[i]];
+    }
+    return clone;
+}
+
 function initGame() {
+    SCENARIO_LOCATIONS = shuffleArray(ALL_LOCATIONS).slice(0, 7);
+
     streetViewService = new google.maps.StreetViewService();
     geocoder = new google.maps.Geocoder();
 
